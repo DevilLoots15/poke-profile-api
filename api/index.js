@@ -2,15 +2,13 @@ import { createCanvas, loadImage } from '@napi-rs/canvas';
 
 export default async function handler(req, res) {
   try {
-    // 1. Security Check (API Key)
+    // 1. Security & Setup
     const API_KEY = process.env.API_KEY || 'ITPAMPW01939KDM2MZL01'; 
     const { key } = req.query;
 
-    if (key !== API_KEY) {
-      return res.status(401).json({ error: 'Unauthorized: Invalid Key' });
-    }
+    if (key !== API_KEY) return res.status(401).json({ error: 'Unauthorized' });
 
-    // 2. Get Parameters from URL
+    // 2. Get Data
     const {
       id = '0000000000',
       dex = '0',
@@ -20,21 +18,62 @@ export default async function handler(req, res) {
       loss = '0'
     } = req.query;
 
-    // 3. Load the Template Image from URL
-    // This is your direct image link
+    // 3. Load the BLANK Template
+    // PASTE YOUR NEW DIRECT IMAGE LINK HERE 👇
     const imageUrl = 'https://i.postimg.cc/g2gJBgm9/IMG-20251121-142105-076.jpg'; 
-    
     const image = await loadImage(imageUrl);
 
-    // 4. Create Canvas
     const canvas = createCanvas(image.width, image.height);
     const ctx = canvas.getContext('2d');
 
-    // Draw the base template image
+    // Draw Template
     ctx.drawImage(image, 0, 0);
 
-    // --- CONFIGURATION: Text Positions ---
+    // --- PRO TEXT CONFIGURATION ---
+    // We add a slight shadow to make text readable on any background
+    ctx.shadowColor = "rgba(0, 0, 0, 0.3)"; // Soft shadow
+    ctx.shadowBlur = 2;
+    ctx.shadowOffsetX = 1;
+    ctx.shadowOffsetY = 1;
+
     const textStyles = {
+      id:     { x: 180, y: 50,  size: 40, color: '#000000', align: 'left' },
+      dex:    { x: 650, y: 205, size: 35, color: '#000000', align: 'center' },
+      caught: { x: 650, y: 295, size: 35, color: '#000000', align: 'center' },
+      region: { x: 650, y: 385, size: 35, color: '#000000', align: 'center' },
+      wins:   { x: 200, y: 800, size: 90, color: '#FFFFFF', align: 'center' },
+      loss:   { x: 460, y: 800, size: 90, color: '#FFFFFF', align: 'center' }
+    };
+
+    // --- HELPER FUNCTION ---
+    const drawText = (text, config) => {
+      // "bold" makes it look more like a UI element
+      ctx.font = `bold ${config.size}px Arial`; 
+      ctx.fillStyle = config.color;
+      ctx.textAlign = config.align;
+      ctx.fillText(text, config.x, config.y);
+    };
+
+    // --- WRITE TEXT (No Erasers Needed!) ---
+    drawText(id, textStyles.id);
+    drawText(`${dex}/1025`, textStyles.dex);
+    drawText(caught, textStyles.caught);
+    drawText(region, textStyles.region);
+    drawText(wins, textStyles.wins);
+    drawText(loss, textStyles.loss);
+
+    // 4. Return High-Quality JPEG
+    const buffer = await canvas.encode('jpeg', { quality: 90 }); // Higher quality setting
+    
+    res.setHeader('Content-Type', 'image/jpeg');
+    res.setHeader('Cache-Control', 'public, max-age=10, s-maxage=10, stale-while-revalidate=10');
+    res.send(buffer);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error');
+  }
+}    const textStyles = {
       id:     { x: 180, y: 50,  size: 40, color: '#000000', align: 'left' },
       dex:    { x: 650, y: 205, size: 35, color: '#000000', align: 'center' },
       caught: { x: 650, y: 295, size: 35, color: '#000000', align: 'center' },
