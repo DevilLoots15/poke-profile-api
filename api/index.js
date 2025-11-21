@@ -26,7 +26,7 @@ export default async function handler(req, res) {
     // 4. Load the Template Image from URL
     // Yahan apna direct image link dalein.
     // Make sure the link ends in .jpg or .png and is publicly accessible.
-    const imageUrl = 'YOUR_DIRECT_IMAGE_LINK_HERE.jpg'; 
+    const imageUrl = 'https://i.postimg.cc/g2gJBgm9/IMG-20251121-142105-076.jpg'; 
     
     const image = await loadImage(imageUrl);
 
